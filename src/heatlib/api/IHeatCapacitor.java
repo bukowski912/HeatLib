@@ -12,9 +12,9 @@ public interface IHeatCapacitor {
 
 	void setManifold(IHeatManifold heatManifold);
 
-	long getCapacity();
+	long capacity();
 
-	void setCapacity(long capacity, boolean updateHeat);
+	void capacity(long capacity, boolean updateHeat);
 
 	Thermals thermals(Direction side);
 
@@ -30,12 +30,12 @@ public interface IHeatCapacitor {
 		setThermals(thermals, null);
 	}
 
-	default double getTemperature() {
-		return (double) getHeat() / getCapacity();
+	default double temperature() {
+		return (double) getHeat() / capacity();
 	}
 
-	default void setTemperature(double temperature) {
-		setHeat((long) (temperature * getCapacity()));
+	default void temperature(double temperature) {
+		setHeat((long) (temperature * capacity()));
 	}
 
 	long getHeat();

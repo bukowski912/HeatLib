@@ -20,14 +20,13 @@ public class BasicHeatContact extends IDyadicHeatContact {
 		final IHeatCapacitor first = firstCapacitor(), second = secondCapacitor();
 		double invConduction = Thermals.adjacentConduction(firstThermals(), secondThermals());
 
-		double firstTemp = firstCapacitor().getTemperature();
-		double secondTemp = secondCapacitor().getTemperature();
+		double firstTemp = firstCapacitor().temperature();
+		double secondTemp = secondCapacitor().temperature();
 
-		long firstCap = firstCapacitor().getCapacity();
-		long secondCap = secondCapacitor().getCapacity();
+		long firstCap = firstCapacitor().capacity();
+		long secondCap = secondCapacitor().capacity();
 
 		double finalTemp = (firstTemp * firstCap + secondTemp * secondCap) / (firstCap + secondCap);
-		System.out.println(finalTemp);
 
 		first.handleHeat((long) ((finalTemp - firstTemp) * firstCap));
 		second.handleHeat((long) ((finalTemp - secondTemp) * secondCap));

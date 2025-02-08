@@ -15,11 +15,11 @@ public class BasicHeatManifold extends HeatManifold {
 	private final EnumMap<Direction, IHeatContact> sided = new EnumMap<>(Direction.class);
 	private IHeatContact sideless;
 
-	public BasicHeatManifold(int heatCapacity) {
+	public BasicHeatManifold(long heatCapacity) {
 		super(new BasicHeatCapacitor(heatCapacity));
 	}
 
-	public BasicHeatManifold(int heatCapacity, Thermals thermals) {
+	public BasicHeatManifold(long heatCapacity, Thermals thermals) {
 		super(new BasicHeatCapacitor(heatCapacity, thermals));
 	}
 

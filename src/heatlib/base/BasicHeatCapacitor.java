@@ -23,21 +23,21 @@ public class BasicHeatCapacitor implements IHeatCapacitor {
 	public BasicHeatCapacitor(long heatCapacity, Thermals thermals) {
 		this.heatCapacity = HeatAPI.validateHeatCapacity(heatCapacity);
 		this.thermals = HeatAPI.validateThermals(thermals);
-		setTemperature(HeatAPI.AMBIENT_TEMP);
+		temperature(HeatAPI.AMBIENT_TEMP);
 	}
 
 	@Override
 	public void handleHeat(long transfer) {
-		System.out.format("Handle heat: %d J, %.2f K\n", transfer, (double) transfer / getCapacity());
+		System.out.format("Handle heat: %d J, %.2f K\n", transfer, (double) transfer / capacity());
 		heatToHandle += transfer;
 	}
 
 	@Override
 	public void updateHeat() {
-		System.out.format("Update heat: (%d J, %.2f K)", getHeat(), getTemperature());
+		System.out.format("Update heat: (%d J, %.2f K)", getHeat(), temperature());
 		storedHeat += heatToHandle;
 		heatToHandle = 0;
-		System.out.format(" -> (%d J, %.2f K)\n", getHeat(), getTemperature());
+		System.out.format(" -> (%d J, %.2f K)\n", getHeat(), temperature());
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class BasicHeatCapacitor implements IHeatCapacitor {
 	}
 
 	@Override
-	public final long getCapacity() {
+	public final long capacity() {
 		return heatCapacity;
 	}
 
@@ -71,7 +71,7 @@ public class BasicHeatCapacitor implements IHeatCapacitor {
 	}
 
 	@Override
-	public void setCapacity(long capacity, boolean updateHeat) {
+	public void capacity(long capacity, boolean updateHeat) {
 		if (updateHeat && storedHeat != -1) {
 			setHeat((long) (storedHeat + (capacity - heatCapacity) * HeatAPI.AMBIENT_TEMP));
 		}
