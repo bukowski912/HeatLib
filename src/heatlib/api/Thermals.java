@@ -15,7 +15,7 @@ public record Thermals(double inverseConduction, double inverseInsulation) {
 		return HeatAPI.AIR_INVERSE_COEFFICIENT + inverseInsulation() + inverseConduction();
 	}
 
-	public static double environmentConduction(IHeatCapacitor capacitor, @Nullable Direction side) {
+	public static double environmentConduction(IHeatCapacitor capacitor, Direction side) {
 		return capacitor.getThermals(side).environmentConduction();
 	}
 

@@ -12,19 +12,18 @@ public abstract class IHeatContact {
 	private Map<IHeatCapacitor, Direction> directionMap = null;
 
 	protected abstract Set<IHeatCapacitor> createCapacitorSet();
-
 	protected abstract Map<IHeatCapacitor, Direction> createDirectionMap();
 
 	@FunctionalInterface
 	interface IMonadicHeatContactFactory<T extends MonadicHeatContact> {
 
-		T create(@NotNull IHeatCapacitor capacitor, @Nullable Direction side);
+		T create(IHeatCapacitor capacitor, Direction side);
 	}
 
 	@FunctionalInterface
 	interface IDyadicHeatContactFactory<T extends IDyadicHeatContact> {
 
-		T create(@NotNull IHeatCapacitor firstCapacitor, @NotNull IHeatCapacitor secondCapacitor, @Nullable Direction side);
+		T create(IHeatCapacitor firstCapacitor, IHeatCapacitor secondCapacitor, Direction side);
 	}
 
 	public abstract static class MonadicHeatContact extends IHeatContact {
@@ -43,14 +42,14 @@ public abstract class IHeatContact {
 			return Map.of();
 		}
 
-		public abstract @NotNull IHeatCapacitor getCapacitor();
+		public abstract IHeatCapacitor getCapacitor();
 
 		@Override
 		public final Set<Thermals> getThermalsSet() {
 			return Set.of(getThermals());
 		}
 
-		public @NotNull Thermals getThermals() {
+		public Thermals getThermals() {
 			return getCapacitor().getThermals(getDirection());
 		}
 
@@ -66,8 +65,7 @@ public abstract class IHeatContact {
 
 		@Override
 		public final Map<IHeatCapacitor, Direction> createDirectionMap() {
-			Direction first = getFirstDirection();
-			Direction second = getSecondDirection();
+			final Direction first = getFirstDirection(), second = getSecondDirection();
 			if (first != null && second != null) {
 				return Map.of(getFirstCapacitor(), first, getSecondCapacitor(), second);
 			}
@@ -80,26 +78,26 @@ public abstract class IHeatContact {
 			return Map.of();
 		}
 
-		public abstract @NotNull IHeatCapacitor getFirstCapacitor();
+		public abstract IHeatCapacitor getFirstCapacitor();
 
-		public abstract @NotNull IHeatCapacitor getSecondCapacitor();
+		public abstract IHeatCapacitor getSecondCapacitor();
 
 		@Override
 		public final Set<Thermals> getThermalsSet() {
 			return Set.of(getFirstThermals(), getSecondThermals());
 		}
 
-		public @NotNull Thermals getFirstThermals() {
+		public Thermals getFirstThermals() {
 			return getFirstCapacitor().getThermals(getFirstDirection());
 		}
 
-		public @NotNull Thermals getSecondThermals() {
+		public Thermals getSecondThermals() {
 			return getSecondCapacitor().getThermals(getSecondDirection());
 		}
 
 		public abstract Direction getFirstDirection();
 
-		public @Nullable Direction getSecondDirection() {
+		public Direction getSecondDirection() {
 			final Direction first = getFirstDirection();
 			return first != null ? first.getOpposite() : null;
 		}

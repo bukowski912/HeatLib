@@ -6,25 +6,25 @@ import heatlib.common.Direction;
 
 public abstract class BasicMonadicHeatContact extends MonadicHeatContact {
 
-	protected @NotNull IHeatCapacitor capacitor;
-	protected @Nullable Direction direction;
+	protected IHeatCapacitor capacitor;
+	protected Direction direction;
 
-	public BasicMonadicHeatContact(@NotNull IHeatCapacitor capacitor) {
+	public BasicMonadicHeatContact(IHeatCapacitor capacitor) {
 		this(capacitor, null);
 	}
 
-	public BasicMonadicHeatContact(@NotNull IHeatCapacitor capacitor, @Nullable Direction direction) {
+	public BasicMonadicHeatContact(IHeatCapacitor capacitor, Direction direction) {
 		this.capacitor = capacitor;
 		this.direction = direction;
 	}
 
 	@Override
-	public final @NotNull IHeatCapacitor getCapacitor() {
+	public final IHeatCapacitor getCapacitor() {
 		return capacitor;
 	}
 
 	@Override
-	public final @Nullable Direction getDirection() {
+	public final Direction getDirection() {
 		return direction;
 	}
 }

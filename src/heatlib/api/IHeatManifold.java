@@ -2,6 +2,9 @@ package heatlib.api;
 
 import heatlib.common.Direction;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A heat manifold stores all of the {@link IHeatContact}s for a single capacitor.
  * <p>
@@ -9,21 +12,60 @@ import heatlib.common.Direction;
  */
 public interface IHeatManifold {
 
-	@Nullable IHeatIsland getIsland();
+	abstract class HeatManifold implements IHeatManifold {
 
-	@NotNull IHeatCapacitor getCapacitor();
+		private IHeatIsland island = null;
+		private final Set<IHeatCapacitor> linked = new HashSet<>();
+		private final Set<IHeatContact> contacts = new HashSet<>();
 
-	void setCapacitor(@NotNull IHeatCapacitor heatCapacitor);
+		@Override
+		public void setCapacitor(IHeatCapacitor capacitor) {
+			linked.add(capacitor);
+		}
 
-	@Nullable IHeatContact getContact(@Nullable Direction side);
+		@Override
+		public boolean addContact(IHeatContact contact) {
+			if (!contacts.add(contact)) {
+				return false;
+			}
+			linked.addAll(contact.getCapacitorSet());
+			return true;
+		}
+
+		// Tracking methods
+		@Override
+		public final IHeatIsland getIsland() {
+			return island;
+		}
+
+		@Override
+		public final void setIsland(IHeatIsland island) {
+			this.island = island;
+		}
+
+		@Override
+		public final Set<IHeatCapacitor> getLinkedSet() {
+			return linked;
+		}
+
+		@Override
+		public final Set<IHeatContact> getContactSet() {
+			return contacts;
+		}
+	}
+
+	IHeatCapacitor getCapacitor();
+
+	void setCapacitor(IHeatCapacitor heatCapacitor);
+
+	IHeatContact getContact(Direction side);
 
 	/**
 	 * Creates and adds a new contact to this {@link IHeatManifold}.
 	 *
-	 * @param side Optional side upon which to establish contact.
 	 * @return The heat contact that was created and added, or {@code null}.
 	 */
-	boolean addContact(@NotNull IHeatContact contact);
+	boolean addContact(IHeatContact contact);
 
 	/**
 	 * Establishes a new contact between this {@link IHeatManifold} and another.
@@ -33,5 +75,11 @@ public interface IHeatManifold {
 	 * @param target Target capacitor which is opposite {@code side}.
 	 * @return The heat contact that was created and added, or {@code null}.
 	 */
-	IHeatContact addAdjacent(IHeatManifold target, @Nullable Direction side);
+	IHeatContact addAdjacent(IHeatManifold target, Direction side);
+
+	// Tracking methods
+	IHeatIsland getIsland();
+	void setIsland(IHeatIsland island);
+	Set<IHeatCapacitor> getLinkedSet();
+	Set<IHeatContact> getContactSet();
 }

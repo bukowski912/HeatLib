@@ -1,26 +1,28 @@
 package heatlib.api;
 
+import heatlib.common.Direction;
+
 /**
  * A heat capacitor is the smallest unit of heat storage in Mekanism. It stores heat energy in the form of joules,
  * and is goverened by its heat capacity and thermal properties ('thermals' for short).
  */
 public interface IHeatCapacitor {
 
-	@Nullable IHeatManifold getManifold();
+	IHeatManifold getManifold();
 
-	void setManifold(@Nullable IHeatManifold heatManifold);
+	void setManifold(IHeatManifold heatManifold);
 
-	double getHeatCapacity();
+	double getCapacity();
 
-	void setHeatCapacity(double heatCapacity, boolean updateHeat);
+	void setCapacity(double capacity, boolean updateHeat);
 
-	@NotNull Thermals getThermals(@Nullable Direction side);
+	Thermals getThermals(Direction side);
 
-	default @NotNull Thermals getThermals() {
+	default Thermals getThermals() {
 		return getThermals(null);
 	}
 
-	default void setThermals(Thermals thermals, @Nullable Direction side) {
+	default void setThermals(Thermals thermals, Direction side) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -29,11 +31,11 @@ public interface IHeatCapacitor {
 	}
 
 	default double getTemperature() {
-		return getHeat() * getHeatCapacity();
+		return getHeat() * getCapacity();
 	}
 
 	default void setTemperature(double temperature) {
-		setHeat(temperature * getHeatCapacity());
+		setHeat(temperature * getCapacity());
 	}
 
 	double getHeat();
