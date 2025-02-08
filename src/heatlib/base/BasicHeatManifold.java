@@ -1,87 +1,77 @@
 package heatlib.base;
 
-import heatlib.api.*;
+import heatlib.api.IHeatContact;
+import heatlib.api.IHeatManifold;
 import heatlib.api.IHeatManifold.HeatManifold;
+import heatlib.api.Thermals;
 import heatlib.common.Direction;
 
 import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class BasicHeatManifold extends HeatManifold {
 
-	private IHeatCapacitor capacitor;
 	private final EnumMap<Direction, IHeatContact> sided = new EnumMap<>(Direction.class);
-	private IHeatContact sideless = null;
+	private IHeatContact sideless;
 
 	public BasicHeatManifold(int heatCapacity) {
-		this(new BasicHeatCapacitor(heatCapacity));
+		super(new BasicHeatCapacitor(heatCapacity));
 	}
 
 	public BasicHeatManifold(int heatCapacity, Thermals thermals) {
-		this(new BasicHeatCapacitor(heatCapacity, thermals));
+		super(new BasicHeatCapacitor(heatCapacity, thermals));
 	}
 
-	public BasicHeatManifold(IHeatCapacitor capacitor) {
-		this.capacitor = capacitor;
-	}
-
-	private boolean areContactsValid() {
-		return sideless.hasCapacitor(capacitor) && sided.values().stream().allMatch((x) -> x.hasCapacitor(capacitor));
-	}
-
-	protected boolean isValid() {
-		return capacitor != null && areContactsValid();
+	private boolean validate() {
+//		return sideless.contains(capacitor) && sided.values().stream().allMatch(contact -> contact.contains(capacitor));
+		return streamContacts().allMatch(contact -> contact.contains(capacitor));
 	}
 
 	@Override
-	public IHeatCapacitor getCapacitor() {
-		return Objects.requireNonNull(capacitor);
+	public Optional<IHeatContact> sided(Direction direction) {
+		return Optional.ofNullable(sided.get(direction));
 	}
 
 	@Override
-	public void setCapacitor(IHeatCapacitor capacitor) {
-		if (this.capacitor != null) {
-			this.capacitor.setManifold(null);
-		}
-		if (capacitor.getManifold() != this) {
-			throw new IllegalArgumentException("New capacitor already belongs to manifold");
-		}
-		super.setCapacitor(this.capacitor = capacitor);
-		capacitor.setManifold(this);
+	public Optional<IHeatContact> sideless() {
+		return Optional.ofNullable(sideless);
 	}
 
-	@Override
-	public IHeatContact getContact(Direction direction) {
-		return direction != null ? sided.get(direction) : sideless;
+	private boolean sidedContact(IHeatContact contact, Direction direction) {
+		return sided.putIfAbsent(direction, contact) == null;
 	}
 
-	@Override
-	public boolean addContact(IHeatContact contact) {
-		Objects.requireNonNull(capacitor);
-		if (!contact.hasCapacitor(capacitor)) {
+	private boolean sidelessContact(IHeatContact contact) {
+		if (sideless != null && sideless != contact) {
 			return false;
 		}
-		var direction = contact.getDirection(capacitor);
-		if (direction == null) {
-			if (sideless != null && sideless != contact) {
-				return false;
-			}
-			sideless = contact;
-		} else {
-			var side = sided.putIfAbsent(direction, contact);
-			if (side != null && side != contact) {
-				return false;
-			}
-		}
-		assert super.addContact(contact);
+		sideless = contact;
 		return true;
 	}
 
 	@Override
-	public IHeatContact addAdjacent(IHeatManifold target, Direction side) {
-		IHeatContact contact = new BasicHeatContact(getCapacitor(), target.getCapacitor(), side);
-		return addContact(contact) && target.addContact(contact) ? contact : null;
+	public boolean contact(IHeatContact contact) {
+		return contact.contains(capacitor) && contact.direction(capacitor)
+				.map(direction -> sidedContact(contact, direction))
+				.orElseGet(() -> sidelessContact(contact));
 	}
+
+	@Override
+	public IHeatContact addAdjacent(IHeatManifold target, Direction side) {
+		IHeatContact contact = new BasicHeatContact(capacitor(), side, target.capacitor());
+		return contact(contact) && target.contact(contact) ? contact : null;
+	}
+
+	@Override
+	public IHeatContact addAdjacent(IHeatManifold target) {
+		IHeatContact contact = new BasicHeatContact(capacitor(), target.capacitor());
+		return contact(contact) && target.contact(contact) ? contact : null;
+	}
+
+	@Override
+	public Stream<IHeatContact> streamContacts() {
+		return Stream.concat(sided.values().stream(), Stream.ofNullable(sideless));
+	}
+
 }

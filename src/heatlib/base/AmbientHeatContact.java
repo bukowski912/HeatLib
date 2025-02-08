@@ -2,20 +2,19 @@ package heatlib.base;
 
 import heatlib.api.HeatAPI;
 import heatlib.api.IHeatCapacitor;
-import heatlib.api.Thermals;
+import heatlib.api.IHeatContact.MonadicHeatContact;
 import heatlib.common.Direction;
 
-public class AmbientHeatContact extends BasicMonadicHeatContact {
+public class AmbientHeatContact extends MonadicHeatContact {
 
 	public AmbientHeatContact(IHeatCapacitor source, Direction side) {
-		super(source, side);
+		super(new Entry(source, side));
 	}
 
 	@Override
-	public double simulate() {
-		double invConduction = Thermals.environmentConduction(capacitor, direction);
-		double tempToTransfer = (capacitor.getTemperature() - HeatAPI.AMBIENT_TEMP) / invConduction;
-		capacitor.handleHeat(-tempToTransfer * capacitor.getCapacity());
-		return Math.max(0, tempToTransfer);
+	public void simulate() {
+		double invConduction = capacitor().thermals().environmentConduction();
+		double tempToTransfer = (capacitor().getTemperature() - HeatAPI.AMBIENT_TEMP) / invConduction;
+		capacitor().handleHeat((long) (-tempToTransfer * capacitor().getCapacity()));
 	}
 }

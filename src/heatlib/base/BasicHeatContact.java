@@ -7,40 +7,29 @@ import heatlib.common.Direction;
 
 public class BasicHeatContact extends IDyadicHeatContact {
 
-	public final IHeatCapacitor first, second;
-	public final Direction direction;
+	public BasicHeatContact(IHeatCapacitor first, IHeatCapacitor second) {
+		super(new Entry(first), new Entry(second));
+	}
 
-	public BasicHeatContact(IHeatCapacitor first, IHeatCapacitor second, Direction direction) {
-		if (first == second) {
-			throw new IllegalArgumentException("Circular contact");
-		}
-		this.first = first;
-		this.second = second;
-		this.direction = direction;
+	public BasicHeatContact(IHeatCapacitor first, Direction firstToSecond, IHeatCapacitor second) {
+		super(new Entry(first, firstToSecond), new Entry(second, firstToSecond.opposite()));
 	}
 
 	@Override
-	public final IHeatCapacitor getFirstCapacitor() {
-		return first;
-	}
+	public void simulate() {
+		final IHeatCapacitor first = firstCapacitor(), second = secondCapacitor();
+		double invConduction = Thermals.adjacentConduction(firstThermals(), secondThermals());
 
-	@Override
-	public final IHeatCapacitor getSecondCapacitor() {
-		return second;
-	}
+		double firstTemp = firstCapacitor().getTemperature();
+		double secondTemp = secondCapacitor().getTemperature();
 
-	@Override
-	public final Direction getFirstDirection() {
-		return direction;
-	}
+		long firstCap = firstCapacitor().getCapacity();
+		long secondCap = secondCapacitor().getCapacity();
 
-	@Override
-	public double simulate() {
-		double invConduction = Thermals.adjacentConduction(this);
-		double tempToTransfer = (first.getTemperature() - second.getTemperature()) / invConduction;
-		double heatToTransfer = tempToTransfer * first.getCapacity();
-		first.handleHeat(-heatToTransfer);
-		second.handleHeat(heatToTransfer);
-		return tempToTransfer;
+		double finalTemp = (firstTemp * firstCap + secondTemp * secondCap) / (firstCap + secondCap);
+		System.out.println(finalTemp);
+
+		first.handleHeat((long) ((finalTemp - firstTemp) * firstCap));
+		second.handleHeat((long) ((finalTemp - secondTemp) * secondCap));
 	}
 }

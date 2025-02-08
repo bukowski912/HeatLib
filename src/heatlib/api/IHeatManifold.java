@@ -2,8 +2,8 @@ package heatlib.api;
 
 import heatlib.common.Direction;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * A heat manifold stores all of the {@link IHeatContact}s for a single capacitor.
@@ -14,25 +14,17 @@ public interface IHeatManifold {
 
 	abstract class HeatManifold implements IHeatManifold {
 
-		private IHeatIsland island = null;
-		private final Set<IHeatCapacitor> linked = new HashSet<>();
-		private final Set<IHeatContact> contacts = new HashSet<>();
+		private IHeatIsland island;
+		protected final IHeatCapacitor capacitor;
 
-		@Override
-		public void setCapacitor(IHeatCapacitor capacitor) {
-			linked.add(capacitor);
-		}
-
-		@Override
-		public boolean addContact(IHeatContact contact) {
-			if (!contacts.add(contact)) {
-				return false;
+		protected HeatManifold(IHeatCapacitor capacitor) {
+			if (capacitor.getManifold() != null) {
+				throw new IllegalArgumentException("Capacitor already belongs to a manifold");
 			}
-			linked.addAll(contact.getCapacitorSet());
-			return true;
+			this.capacitor = capacitor;
+			capacitor.setManifold(this);
 		}
 
-		// Tracking methods
 		@Override
 		public final IHeatIsland getIsland() {
 			return island;
@@ -44,28 +36,27 @@ public interface IHeatManifold {
 		}
 
 		@Override
-		public final Set<IHeatCapacitor> getLinkedSet() {
-			return linked;
-		}
-
-		@Override
-		public final Set<IHeatContact> getContactSet() {
-			return contacts;
+		public final IHeatCapacitor capacitor() {
+			return capacitor;
 		}
 	}
 
-	IHeatCapacitor getCapacitor();
+	IHeatIsland getIsland();
 
-	void setCapacitor(IHeatCapacitor heatCapacitor);
+	void setIsland(IHeatIsland island);
 
-	IHeatContact getContact(Direction side);
+	IHeatCapacitor capacitor();
+
+	Optional<IHeatContact> sided(Direction side);
+
+	Optional<IHeatContact> sideless();
 
 	/**
 	 * Creates and adds a new contact to this {@link IHeatManifold}.
 	 *
 	 * @return The heat contact that was created and added, or {@code null}.
 	 */
-	boolean addContact(IHeatContact contact);
+	boolean contact(IHeatContact contact);
 
 	/**
 	 * Establishes a new contact between this {@link IHeatManifold} and another.
@@ -77,9 +68,14 @@ public interface IHeatManifold {
 	 */
 	IHeatContact addAdjacent(IHeatManifold target, Direction side);
 
-	// Tracking methods
-	IHeatIsland getIsland();
-	void setIsland(IHeatIsland island);
-	Set<IHeatCapacitor> getLinkedSet();
-	Set<IHeatContact> getContactSet();
+	IHeatContact addAdjacent(IHeatManifold target);
+
+	Stream<IHeatContact> streamContacts();
+
+	default Stream<IHeatCapacitor> streamLinked() {
+		final IHeatCapacitor thisCapacitor = capacitor();
+		return streamContacts()
+				.flatMap(IHeatContact::capacitors)
+				.filter(capacitor -> capacitor != thisCapacitor);
+	}
 }

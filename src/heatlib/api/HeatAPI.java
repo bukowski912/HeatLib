@@ -29,14 +29,8 @@ public class HeatAPI {
 	 * Default inverse insulation coefficient
 	 */
 	public static final double DEFAULT_INVERSE_INSULATION = 0;
-	/**
-	 * Represents the value at which changes to heat below this amount will not be taken into account by Mekanism.
-	 *
-	 * @since 10.4.0
-	 */
-	public static final double EPSILON = Constants.EPSILON;
 
-	public static double validateHeatCapacity(double heatCapacity) {
+	public static long validateHeatCapacity(long heatCapacity) {
 		if (heatCapacity < 1) {
 			throw new IllegalArgumentException("Heat capacity must be at least one");
 		}

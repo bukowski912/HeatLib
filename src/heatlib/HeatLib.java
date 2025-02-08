@@ -15,10 +15,14 @@ public class HeatLib {
 			new BasicHeatManifold(1_000),
 		};
 
-		IHeatContact contact = manifolds[0].addAdjacent(manifolds[1], null);
+		manifolds[0].capacitor().setTemperature(30D);
+		manifolds[1].capacitor().setTemperature(40D);
+
+		IHeatContact contact = manifolds[0].addAdjacent(manifolds[1]);
 		Objects.requireNonNull(contact);
 
 		IHeatIsland island = new BasicHeatIsland(manifolds);
-		System.out.println(island);
+		island.simulateAll(0);
+		island.updateAll(0);
 	}
 }

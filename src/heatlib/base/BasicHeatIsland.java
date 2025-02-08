@@ -61,8 +61,9 @@ public class BasicHeatIsland implements IHeatIsland {
 	@Override
 	public void registerManifold(IHeatManifold manifold) {
 		if (manifolds.add(manifold)) {
-			capacitors.addAll(manifold.getLinkedSet());
-			contacts.addAll(manifold.getContactSet());
+			capacitors.add(manifold.capacitor());
+			manifold.streamLinked().forEachOrdered(capacitors::add);
+			manifold.streamContacts().forEachOrdered(contacts::add);
 		}
 	}
 

@@ -2,130 +2,108 @@ package heatlib.api;
 
 import heatlib.common.Direction;
 
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-public abstract class IHeatContact {
+public interface IHeatContact {
 
-	private Set<IHeatCapacitor> capacitorSet = null;
-	private Map<IHeatCapacitor, Direction> directionMap = null;
+	record Entry(IHeatCapacitor capacitor, Optional<Direction> direction) {
+		public Entry(IHeatCapacitor capacitor) {
+			this(capacitor, Optional.empty());
+		}
 
-	protected abstract Set<IHeatCapacitor> createCapacitorSet();
-	protected abstract Map<IHeatCapacitor, Direction> createDirectionMap();
+		public Entry(IHeatCapacitor capacitor, Direction direction) {
+			this(capacitor, Optional.of(direction));
+		}
 
-	@FunctionalInterface
-	interface IMonadicHeatContactFactory<T extends MonadicHeatContact> {
+		public Thermals thermals() {
+			return direction.map(capacitor::thermals).orElseGet(capacitor::thermals);
+		}
 
-		T create(IHeatCapacitor capacitor, Direction side);
+		public boolean has(IHeatCapacitor capacitor) {
+			return Objects.equals(capacitor(), capacitor);
+		}
 	}
 
-	@FunctionalInterface
-	interface IDyadicHeatContactFactory<T extends IDyadicHeatContact> {
+	abstract class MonadicHeatContact implements IHeatContact {
 
-		T create(IHeatCapacitor firstCapacitor, IHeatCapacitor secondCapacitor, Direction side);
-	}
+		protected final Entry entry;
 
-	public abstract static class MonadicHeatContact extends IHeatContact {
-
-		@Override
-		public final Set<IHeatCapacitor> createCapacitorSet() {
-			return Set.of(getCapacitor());
+		protected MonadicHeatContact(Entry entry) {
+			this.entry = entry;
 		}
 
-		@Override
-		public final Map<IHeatCapacitor, Direction> createDirectionMap() {
-			Direction direction = getDirection();
-			if (direction != null) {
-				return Map.of(getCapacitor(), direction);
-			}
-			return Map.of();
+		public final IHeatCapacitor capacitor() {
+			return entry.capacitor();
 		}
 
-		public abstract IHeatCapacitor getCapacitor();
-
-		@Override
-		public final Set<Thermals> getThermalsSet() {
-			return Set.of(getThermals());
+		public final Optional<Direction> direction() {
+			return entry.direction();
 		}
 
-		public Thermals getThermals() {
-			return getCapacitor().getThermals(getDirection());
-		}
-
-		public abstract Direction getDirection();
-	}
-
-	public abstract static class IDyadicHeatContact extends IHeatContact {
-
-		@Override
-		public final Set<IHeatCapacitor> createCapacitorSet() {
-			return Set.of(getFirstCapacitor(), getSecondCapacitor());
+		public final Thermals thermals() {
+			return entry.thermals();
 		}
 
 		@Override
-		public final Map<IHeatCapacitor, Direction> createDirectionMap() {
-			final Direction first = getFirstDirection(), second = getSecondDirection();
-			if (first != null && second != null) {
-				return Map.of(getFirstCapacitor(), first, getSecondCapacitor(), second);
-			}
-			if (first != null) {
-				return Map.of(getFirstCapacitor(), first);
-			}
-			if (second != null) {
-				return Map.of(getSecondCapacitor(), second);
-			}
-			return Map.of();
+		public final Stream<Entry> entries() {
+			return Stream.of(entry);
+		}
+	}
+
+	abstract class IDyadicHeatContact implements IHeatContact {
+
+		protected final Entry firstEntry, secondEntry;
+
+		protected IDyadicHeatContact(Entry firstEntry, Entry secondEntry) {
+			this.firstEntry = firstEntry;
+			this.secondEntry = secondEntry;
 		}
 
-		public abstract IHeatCapacitor getFirstCapacitor();
+		public final IHeatCapacitor firstCapacitor() {
+			return firstEntry.capacitor();
+		}
 
-		public abstract IHeatCapacitor getSecondCapacitor();
+		public final IHeatCapacitor secondCapacitor() {
+			return secondEntry.capacitor();
+		}
+
+		public final Optional<Direction> firstDirection() {
+			return firstEntry.direction();
+		}
+
+		public final Optional<Direction> secondDirection() {
+			return secondEntry.direction();
+		}
+
+		public final Thermals firstThermals() {
+			return firstEntry.thermals();
+		}
+
+		public final Thermals secondThermals() {
+			return secondEntry.thermals();
+		}
 
 		@Override
-		public final Set<Thermals> getThermalsSet() {
-			return Set.of(getFirstThermals(), getSecondThermals());
-		}
-
-		public Thermals getFirstThermals() {
-			return getFirstCapacitor().getThermals(getFirstDirection());
-		}
-
-		public Thermals getSecondThermals() {
-			return getSecondCapacitor().getThermals(getSecondDirection());
-		}
-
-		public abstract Direction getFirstDirection();
-
-		public Direction getSecondDirection() {
-			final Direction first = getFirstDirection();
-			return first != null ? first.getOpposite() : null;
+		public final Stream<Entry> entries() {
+			return Stream.of(firstEntry, secondEntry);
 		}
 	}
 
-	public final Set<IHeatCapacitor> getCapacitorSet() {
-		if (capacitorSet == null) {
-			capacitorSet = Objects.requireNonNull(createCapacitorSet());
-		}
-		return capacitorSet;
+	Stream<Entry> entries();
+
+	default Stream<IHeatCapacitor> capacitors() {
+		return entries().map(Entry::capacitor);
 	}
 
-	public boolean hasCapacitor(IHeatCapacitor capacitor) {
-		return getCapacitorSet().contains(capacitor);
+	default boolean contains(IHeatCapacitor capacitor) {
+		return capacitors().anyMatch(capacitor::equals);
 	}
 
-	public final Map<IHeatCapacitor, Direction> getDirectionMap() {
-		if (directionMap == null) {
-			directionMap = Objects.requireNonNull(createDirectionMap());
-		}
-		return directionMap;
+	default Optional<Direction> direction(IHeatCapacitor capacitor) {
+		return entries().filter(entry -> entry.has(capacitor)).findFirst().flatMap(Entry::direction);
 	}
 
-	public Direction getDirection(IHeatCapacitor capacitor) {
-		return getDirectionMap().get(capacitor);
-	}
-
-	public abstract Set<Thermals> getThermalsSet();
-
-	public abstract double simulate();
+	void simulate();
 }
