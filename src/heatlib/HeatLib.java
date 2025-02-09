@@ -11,7 +11,6 @@ import java.util.Scanner;
 
 public class HeatLib {
 	public static void main(String[] args) {
-
 		final Scanner scanner = new Scanner(System.in);
 
 		System.out.print("Enter heat capacity of first capacitor (in joules per kelvin): ");
@@ -28,11 +27,11 @@ public class HeatLib {
 		};
 
 		System.out.print("Enter initial temperature of first capacitor (in kelvin): ");
-		manifolds[0].capacitor().temperature(scanner.nextDouble());
+		manifolds[0].getCapacitor().setTemp(scanner.nextDouble());
 		scanner.nextLine();
 
 		System.out.print("Enter initial temperature of second capacitor (in kelvin): ");
-		manifolds[1].capacitor().temperature(scanner.nextDouble());
+		manifolds[1].getCapacitor().setTemp(scanner.nextDouble());
 		scanner.nextLine();
 
 		IHeatContact contact = manifolds[0].addAdjacent(manifolds[1]);
@@ -42,7 +41,7 @@ public class HeatLib {
 		island.simulateAll(0);
 		island.updateAll(0);
 
-		System.out.println("Final temp. of first cap.: " + manifolds[0].capacitor().temperature());
-		System.out.println("Final temp. of second cap.: " + manifolds[1].capacitor().temperature());
+		System.out.println("Final temperature of first capacitor: " + manifolds[0].getCapacitor().getTemp());
+		System.out.println("Final temperature of second capacitor: " + manifolds[1].getCapacitor().getTemp());
 	}
 }

@@ -12,14 +12,14 @@ public interface IHeatCapacitor {
 
 	void setManifold(IHeatManifold heatManifold);
 
-	long capacity();
+	long getCapacity();
 
-	void capacity(long capacity, boolean updateHeat);
+	void setCapacity(long capacity, boolean updateHeat);
 
-	Thermals thermals(Direction side);
+	Thermals getThermals(Direction side);
 
-	default Thermals thermals() {
-		return thermals(null);
+	default Thermals getThermals() {
+		return getThermals(null);
 	}
 
 	default void setThermals(Thermals thermals, Direction side) {
@@ -30,12 +30,12 @@ public interface IHeatCapacitor {
 		setThermals(thermals, null);
 	}
 
-	default double temperature() {
-		return (double) getHeat() / capacity();
+	default double getTemp() {
+		return (double) getHeat() / getCapacity();
 	}
 
-	default void temperature(double temperature) {
-		setHeat((long) (temperature * capacity()));
+	default void setTemp(double temperature) {
+		setHeat((long) (temperature * getCapacity()));
 	}
 
 	long getHeat();
@@ -51,12 +51,20 @@ public interface IHeatCapacitor {
 	}
 
 	/**
-	 * Handles a change of heat in this capacitor.
+	 * Handles a change of heat in this capacitor. Typically this is stored into an accumulator for {@link #updateHeat} to process.
 	 *
 	 * @param transfer The amount being transferred. Can be positive (for insertion) or negative (for removal).
 	 * @implNote Can be called several times per tick; the values of successive calls should be accumulated.
 	 */
 	void handleHeat(long transfer);
+
+	/**
+	 * Convenience method for the above, but in terms of a delta temperature.
+	 * @param temperature The temperature to apply to the capacitor.
+	 */
+	default void handleTemp(double temperature) {
+		handleHeat((long) (temperature * getCapacity()));
+	}
 
 	/**
 	 * Applies any heat accumulated by {@link #handleHeat(long)} to this capacitor.

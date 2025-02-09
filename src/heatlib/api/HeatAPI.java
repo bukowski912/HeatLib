@@ -1,9 +1,5 @@
 package heatlib.api;
 
-import heatlib.common.Constants;
-
-import java.util.Objects;
-
 public class HeatAPI {
 
 	private HeatAPI() {
@@ -18,10 +14,6 @@ public class HeatAPI {
 	 */
 	public static final double AIR_INVERSE_COEFFICIENT = 10_000;
 	/**
-	 * Default heat capacity
-	 */
-	public static final double DEFAULT_HEAT_CAPACITY = 1;
-	/**
 	 * Default inverse conduction coefficient
 	 */
 	public static final double DEFAULT_INVERSE_CONDUCTION = 1;
@@ -30,18 +22,4 @@ public class HeatAPI {
 	 */
 	public static final double DEFAULT_INVERSE_INSULATION = 0;
 
-	public static long validateHeatCapacity(long heatCapacity) {
-		if (heatCapacity < 1) {
-			throw new IllegalArgumentException("Heat capacity must be at least one");
-		}
-		return heatCapacity;
-	}
-
-	public static Thermals validateThermals(Thermals thermals) {
-		Objects.requireNonNull(thermals);
-		if (thermals.inverseConduction() < 1) {
-			throw new IllegalArgumentException("Inverse conduction coefficient must be at least one");
-		}
-		return thermals;
-	}
 }

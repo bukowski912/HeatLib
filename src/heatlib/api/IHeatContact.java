@@ -18,7 +18,7 @@ public interface IHeatContact {
 		}
 
 		public Thermals thermals() {
-			return direction.map(capacitor::thermals).orElseGet(capacitor::thermals);
+			return direction.map(capacitor::getThermals).orElseGet(capacitor::getThermals);
 		}
 
 		public boolean has(IHeatCapacitor capacitor) {
@@ -38,16 +38,8 @@ public interface IHeatContact {
 			return entry.capacitor();
 		}
 
-		public final Optional<Direction> direction() {
-			return entry.direction();
-		}
-
-		public final Thermals thermals() {
-			return entry.thermals();
-		}
-
 		@Override
-		public final Stream<Entry> entries() {
+		public final Stream<Entry> streamEntries() {
 			return Stream.of(entry);
 		}
 	}
@@ -69,14 +61,6 @@ public interface IHeatContact {
 			return secondEntry.capacitor();
 		}
 
-		public final Optional<Direction> firstDirection() {
-			return firstEntry.direction();
-		}
-
-		public final Optional<Direction> secondDirection() {
-			return secondEntry.direction();
-		}
-
 		public final Thermals firstThermals() {
 			return firstEntry.thermals();
 		}
@@ -86,23 +70,23 @@ public interface IHeatContact {
 		}
 
 		@Override
-		public final Stream<Entry> entries() {
+		public final Stream<Entry> streamEntries() {
 			return Stream.of(firstEntry, secondEntry);
 		}
 	}
 
-	Stream<Entry> entries();
+	Stream<Entry> streamEntries();
 
-	default Stream<IHeatCapacitor> capacitors() {
-		return entries().map(Entry::capacitor);
+	default Stream<IHeatCapacitor> streamCapacitors() {
+		return streamEntries().map(Entry::capacitor);
 	}
 
 	default boolean contains(IHeatCapacitor capacitor) {
-		return capacitors().anyMatch(capacitor::equals);
+		return streamCapacitors().anyMatch(capacitor::equals);
 	}
 
-	default Optional<Direction> direction(IHeatCapacitor capacitor) {
-		return entries().filter(entry -> entry.has(capacitor)).findFirst().flatMap(Entry::direction);
+	default Optional<Direction> getDirection(IHeatCapacitor capacitor) {
+		return streamEntries().filter(entry -> entry.has(capacitor)).findFirst().flatMap(Entry::direction);
 	}
 
 	void simulate();

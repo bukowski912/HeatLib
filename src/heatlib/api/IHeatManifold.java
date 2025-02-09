@@ -1,8 +1,6 @@
 package heatlib.api;
 
 import heatlib.common.Direction;
-
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -14,7 +12,6 @@ public interface IHeatManifold {
 
 	abstract class HeatManifold implements IHeatManifold {
 
-		private IHeatIsland island;
 		protected final IHeatCapacitor capacitor;
 
 		protected HeatManifold(IHeatCapacitor capacitor) {
@@ -26,37 +23,19 @@ public interface IHeatManifold {
 		}
 
 		@Override
-		public final IHeatIsland getIsland() {
-			return island;
-		}
-
-		@Override
-		public final void setIsland(IHeatIsland island) {
-			this.island = island;
-		}
-
-		@Override
-		public final IHeatCapacitor capacitor() {
+		public final IHeatCapacitor getCapacitor() {
 			return capacitor;
 		}
 	}
 
-	IHeatIsland getIsland();
-
-	void setIsland(IHeatIsland island);
-
-	IHeatCapacitor capacitor();
-
-	Optional<IHeatContact> sided(Direction side);
-
-	Optional<IHeatContact> sideless();
+	IHeatCapacitor getCapacitor();
 
 	/**
 	 * Creates and adds a new contact to this {@link IHeatManifold}.
 	 *
 	 * @return The heat contact that was created and added, or {@code null}.
 	 */
-	boolean contact(IHeatContact contact);
+	boolean addContact(IHeatContact contact);
 
 	/**
 	 * Establishes a new contact between this {@link IHeatManifold} and another.
@@ -73,9 +52,9 @@ public interface IHeatManifold {
 	Stream<IHeatContact> streamContacts();
 
 	default Stream<IHeatCapacitor> streamLinked() {
-		final IHeatCapacitor thisCapacitor = capacitor();
+		final IHeatCapacitor thisCapacitor = getCapacitor();
 		return streamContacts()
-				.flatMap(IHeatContact::capacitors)
+				.flatMap(IHeatContact::streamCapacitors)
 				.filter(capacitor -> capacitor != thisCapacitor);
 	}
 }

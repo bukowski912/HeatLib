@@ -18,9 +18,6 @@ public class BasicHeatIsland implements IHeatIsland {
 	private long lastSimulationTime = -1;
 	private long lastUpdateTime = -1;
 
-	public BasicHeatIsland() {
-	}
-
 	public BasicHeatIsland(IHeatManifold... manifolds) {
 		for (IHeatManifold manifold : manifolds) {
 			registerManifold(manifold);
@@ -28,40 +25,9 @@ public class BasicHeatIsland implements IHeatIsland {
 	}
 
 	@Override
-	public boolean hasCapacitor(IHeatCapacitor capacitor) {
-		return capacitors.contains(capacitor);
-	}
-
-	@Override
-	public boolean hasContact(IHeatContact contact) {
-		return contacts.contains(contact);
-	}
-
-	@Override
-	public boolean hasManifold(IHeatManifold manifold) {
-		return manifolds.contains(manifold);
-	}
-
-	/*@Override
-	public boolean registerCapacitor(IHeatCapacitor capacitor) {
-		if (!hasManifold(capacitor.getManifold())) {
-			throw new IllegalStateException("Register manifolds before capacitors");
-		}
-		return capacitors.add(capacitor);
-	}
-
-	@Override
-	public boolean registerContact(IHeatContact contact) {
-		if (contact.getCapacitorSet().stream().anyMatch((x) -> !hasCapacitor(x))) {
-			throw new IllegalStateException("Register capacitors before contacts");
-		}
-		return contacts.add(contact);
-	}*/
-
-	@Override
 	public void registerManifold(IHeatManifold manifold) {
 		if (manifolds.add(manifold)) {
-			capacitors.add(manifold.capacitor());
+			capacitors.add(manifold.getCapacitor());
 			manifold.streamLinked().forEachOrdered(capacitors::add);
 			manifold.streamContacts().forEachOrdered(contacts::add);
 		}
